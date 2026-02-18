@@ -1,0 +1,83 @@
+import RPi.GPIO as GPIO
+GPIO.setwarnings(False)
+import time
+
+print("archivo bueno")
+
+PIR = 17
+LED_AMARILLO = 27
+LED_ROJO = 22
+ZUMBADOR = 23
+intentos = 0
+bloqueado = False
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(PIR,GPIO.IN)
+GPIO.setup(LED_AMARILLO,GPIO.OUT)
+GPIO.setup(LED_ROJO,GPIO.OUT)
+GPIO.setup(ZUMBADOR,GPIO.OUT)
+
+detecciones = 0
+contraseña = "1234"
+
+print("Sistema de alarma activado")
+
+while True:
+    if bloqueado:
+    time.sleep(1)
+    continue
+    if GPIO.input(PIR)== True:
+        detecciones = detecciones +1
+
+        if detecciones ==1:
+            GPIO.output(LED_ROJO,False)
+
+            GPIO.output(LED_AMARILLO,True)
+            time.sleep(1)
+            print("amarillo")
+
+        elif detecciones==2:
+
+            GPIO.output(LED_AMARILLO,False)
+            GPIO.output(LED_ROJO,True)
+            time.sleep(1)
+            print("rojo")
+
+        else:
+            GPIO.output(LED_ROJO,False)
+            for i in range(3):
+    	    GPIO.output(ZUMBADOR, True)
+            time.sleep(0.2)
+            GPIO.output(ZUMBADOR, False)
+            time.sleep(0.2)
+
+            clave=input ("Introduzca la contraseña:")
+
+            if contraseña == "1234" and clave == contraseña:
+                print("alarma desactivada")
+		intentos += 1
+                if intentos >= 3:
+                bloqueado = True
+                GPIO.output(LED_ROJO, True)
+                
+ 		while True:
+   		 nueva = input("Escriba una nueva contraseña (6 digitos): ")
+
+    	 	if len(nueva) == 6 and nueva.isdigit():
+        		contraseña = nueva
+        		print("Contraseña actualizada correctamente")
+        		break
+   		else:
+        		print("Contraseña no válida, deben ser 6 números")
+	
+                detecciones = 0
+
+            elif clave == contraseña:
+                print("alarma desactivada")
+                detecciones = 0
+
+            else:
+                print("avisando a la pasma")
+                detecciones=0
+
+        time.sleep(2)
